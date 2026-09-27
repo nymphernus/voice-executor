@@ -22,12 +22,14 @@ class TestModelManager:
         manager = ModelManager(str(tmp_path / "nonexistent"))
         assert manager.exists() is False
 
-    @patch("voice_assistant.model_manager.urllib.request.urlretrieve")
     @patch("voice_assistant.model_manager.zipfile.ZipFile")
-    def test_download(self, mock_zipfile_class, mock_urlretrieve, tmp_path):
-        # Создаём фейковый ZIP
-        zip_path = tmp_path / "model.zip"
-        zip_path.write_bytes(b"fake zip content")
+    @patch("voice_assistant.model_manager.urllib.request.urlopen")
+    def test_download(self, mock_urlopen, mock_zipfile_class, tmp_path):
+        # Мокаем HTTP-ответ
+        mock_response = MagicMock()
+        mock_response.headers = {"Content-Length": "1024"}
+        mock_response.read.side_effect = [b"x" * 512, b"x" * 512, b""]
+        mock_urlopen.return_value.__enter__.return_value = mock_response
 
         mock_zip = MagicMock()
         mock_zipfile_class.return_value.__enter__.return_value = mock_zip
@@ -35,7 +37,7 @@ class TestModelManager:
         manager = ModelManager(str(tmp_path / "vosk-model-small-ru-0.22"))
         result = manager.download()
 
-        mock_urlretrieve.assert_called_once()
+        mock_urlopen.assert_called_once()
         mock_zip.extractall.assert_called_once()
         assert result == tmp_path / "vosk-model-small-ru-0.22"
 
@@ -46,11 +48,14 @@ class TestModelManager:
         result = manager.ensure_model()
         assert result == model_dir
 
-    @patch("voice_assistant.model_manager.urllib.request.urlretrieve")
     @patch("voice_assistant.model_manager.zipfile.ZipFile")
-    def test_ensure_model_download(self, mock_zipfile_class, mock_urlretrieve, tmp_path):
-        zip_path = tmp_path / "model.zip"
-        zip_path.write_bytes(b"fake zip content")
+    @patch("voice_assistant.model_manager.urllib.request.urlopen")
+    def test_ensure_model_download(self, mock_urlopen, mock_zipfile_class, tmp_path):
+        # Мокаем HTTP-ответ
+        mock_response = MagicMock()
+        mock_response.headers = {"Content-Length": "1024"}
+        mock_response.read.side_effect = [b"x" * 512, b"x" * 512, b""]
+        mock_urlopen.return_value.__enter__.return_value = mock_response
 
         mock_zip = MagicMock()
         mock_zipfile_class.return_value.__enter__.return_value = mock_zip
@@ -58,7 +63,7 @@ class TestModelManager:
         manager = ModelManager(str(tmp_path / "vosk-model-small-ru-0.22"))
         result = manager.ensure_model()
 
-        mock_urlretrieve.assert_called_once()
+        mock_urlopen.assert_called_once()
         assert result == tmp_path / "vosk-model-small-ru-0.22"
 
 

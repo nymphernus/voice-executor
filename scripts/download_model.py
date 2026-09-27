@@ -47,6 +47,10 @@ def main():
         print(f"Модель скачана: {path}")
     except RuntimeError as e:
         print(f"Ошибка: {e}")
+        print("\nВозможные решения:")
+        print("1. Проверьте подключение к интернету")
+        print("2. Скачайте вручную: https://alphacephei.com/vosk/models/vosk-model-small-ru-0.22.zip")
+        print("3. Распакуйте в папку models/")
         sys.exit(1)
 
 
