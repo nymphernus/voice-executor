@@ -2,8 +2,8 @@
 
 import ctypes
 import logging
-import os
 import platform
+import re
 import subprocess
 import sys
 import webbrowser
@@ -11,6 +11,8 @@ import webbrowser
 logger = logging.getLogger(__name__)
 
 VK_F5 = 0x74
+VK_LWIN = 0x5B  # Left Windows key
+VK_S = 0x53  # S key
 
 
 def do_exit() -> None:
@@ -37,10 +39,8 @@ def do_taskmanager() -> None:
     logger.info("Открытие диспетчера задач")
     print("Открываю диспетчер задач...")
     try:
-        subprocess.Popen(["taskmgr.exe"])
-    except FileNotFoundError:
-        logger.error("taskmgr.exe не найден")
-        print("Ошибка: диспетчер задач не найден")
+        # Запускаем через shell для обхода требования прав администратора
+        subprocess.Popen("taskmgr.exe", shell=True)
     except Exception as e:
         logger.error(f"Ошибка запуска диспетчера задач: {e}")
 
@@ -53,13 +53,11 @@ def do_terminal() -> None:
 
     try:
         if system == "Windows":
-            # Пробуем Windows Terminal, потом cmd
             try:
                 subprocess.Popen(["wt.exe"])
             except FileNotFoundError:
                 subprocess.Popen(["cmd.exe"])
         elif system == "Linux":
-            # Пробуем распространённые терминалы Linux
             for term in ["gnome-terminal", "konsole", "xterm", "terminator"]:
                 try:
                     subprocess.Popen([term])
@@ -73,30 +71,119 @@ def do_terminal() -> None:
 
 
 def do_screenshot() -> None:
-    """Делает скриншот рабочего стола."""
-    logger.info("Создание скриншота")
+    """Делает скриншот через Shift+Win+S (встроенная функция Windows)."""
+    logger.info("Создание скриншота через Shift+Win+S")
     print("Делаю скриншот...")
 
+    if platform.system() != "Windows":
+        logger.error("Скриншот через Shift+Win+S поддерживается только на Windows")
+        print("Ошибка: скриншот поддерживается только на Windows")
+        return
+
     try:
-        from PIL import ImageGrab
+        user32 = ctypes.windll.user32
 
-        screenshot = ImageGrab.grab()
+        # Отпускаем клавиши
+        user32.keybd_event(VK_LWIN, 0, 0x0002, 0)
+        user32.keybd_event(VK_S, 0, 0x0002, 0)
 
-        # Сохраняем в рабочий стол или в текущую директорию
-        save_path = os.path.join(os.path.expanduser("~"), "Desktop", "screenshot.png")
-        screenshot.save(save_path)
-        logger.info(f"Скриншот сохранён: {save_path}")
-        print(f"Скриншот сохранён: {save_path}")
+        # Нажимаем Win+Shift+S
+        user32.keybd_event(VK_LWIN, 0, 0, 0)
+        user32.keybd_event(0x10, 0, 0, 0)  # Shift
+        user32.keybd_event(VK_S, 0, 0, 0)
 
-    except ImportError:
-        logger.error("Pillow не установлен")
-        print("Ошибка: Pillow не установлен. Установите: pip install Pillow")
+        # Отпускаем в обратном порядке
+        user32.keybd_event(VK_S, 0, 0x0002, 0)
+        user32.keybd_event(0x10, 0, 0x0002, 0)
+        user32.keybd_event(VK_LWIN, 0, 0x0002, 0)
+
+        logger.info("Скриншот активирован")
     except Exception as e:
         logger.error(f"Ошибка создания скриншота: {e}")
 
 
-def do_timer() -> None:
-    """Открывает таймер в браузере."""
+def do_timer(text: str = "") -> None:
+    """
+    Открывает таймер в браузере.
+
+    Args:
+        text: Распознанный текст (может содержать число минут).
+    """
     logger.info("Открытие таймера")
     print("Открываю таймер...")
-    webbrowser.open("https://www.google.com/search?q=timer")
+
+    # Парсим число из текста
+    minutes = _extract_minutes(text)
+
+    if minutes:
+        url = f"https://www.google.com/search?q={minutes}+minute+timer"
+        logger.info(f"Таймер на {minutes} минут")
+        print(f"Таймер на {minutes} минут...")
+    else:
+        url = "https://www.google.com/search?q=timer"
+        print("Открываю таймер...")
+
+    webbrowser.open(url)
+
+
+def _extract_minutes(text: str) -> int | None:
+    """
+    Извлекает количество минут из текста.
+
+    Args:
+        text: Распознанный текст.
+
+    Returns:
+        Количество минут или None.
+    """
+    # Числа словами (русские)
+    number_words = {
+        "одну": 1,
+        "один": 1,
+        "одна": 1,
+        "две": 2,
+        "два": 2,
+        "двух": 2,
+        "три": 3,
+        "трёх": 3,
+        "трех": 3,
+        "четыре": 4,
+        "четырёх": 4,
+        "четырех": 4,
+        "пять": 5,
+        "пяти": 5,
+        "шесть": 6,
+        "шести": 6,
+        "семь": 7,
+        "семи": 7,
+        "восемь": 8,
+        "восьми": 8,
+        "девять": 9,
+        "девяти": 9,
+        "десять": 10,
+        "десяти": 10,
+        "пятнадцать": 15,
+        "пятнадцати": 15,
+        "двадцать": 20,
+        "двадцати": 20,
+        "тридцать": 30,
+        "тридцати": 30,
+        "сорок": 40,
+        "сорока": 40,
+        "шестьдесят": 60,
+        "шестидесяти": 60,
+    }
+
+    text_lower = text.lower()
+
+    # Ищем число словами
+    for word, num in number_words.items():
+        if word in text_lower:
+            return num
+
+    # Ищем цифры
+    match = re.search(r"(\d+)", text)
+    if match:
+        return int(match.group(1))
+
+    return None

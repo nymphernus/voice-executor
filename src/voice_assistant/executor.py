@@ -2,6 +2,7 @@
 Исполнитель команд — реестр действий.
 """
 
+import inspect
 import logging
 from collections.abc import Callable
 
@@ -25,12 +26,13 @@ class CommandExecutor:
         self._actions[name] = action
         logger.debug(f"Зарегистрировано действие: {name}")
 
-    def execute(self, action_name: str) -> bool:
+    def execute(self, action_name: str, text: str = "") -> bool:
         """
         Выполняет действие по имени.
 
         Args:
             action_name: Имя действия.
+            text: Распознанный текст (для команд, которым нужен контекст).
 
         Returns:
             True если действие найдено и выполнено.
@@ -42,8 +44,15 @@ class CommandExecutor:
             logger.error(f"Неизвестное действие: {action_name}")
             raise KeyError(f"Действие не найдено: {action_name}")
 
+        action = self._actions[action_name]
         logger.info(f"Выполнение действия: {action_name}")
-        self._actions[action_name]()
+
+        # Проверяем, принимает ли функция аргумент text
+        sig = inspect.signature(action)
+        if len(sig.parameters) > 0:
+            action(text)
+        else:
+            action()
         return True
 
     def has_action(self, name: str) -> bool:

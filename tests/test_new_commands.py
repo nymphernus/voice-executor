@@ -15,12 +15,7 @@ class TestTaskManager:
     @patch("voice_assistant.commands.system.subprocess.Popen")
     def test_do_taskmanager(self, mock_popen):
         system.do_taskmanager()
-        mock_popen.assert_called_once_with(["taskmgr.exe"])
-
-    @patch("voice_assistant.commands.system.subprocess.Popen")
-    def test_do_taskmanager_not_found(self, mock_popen):
-        mock_popen.side_effect = FileNotFoundError()
-        system.do_taskmanager()
+        mock_popen.assert_called_once_with("taskmgr.exe", shell=True)
 
 
 class TestTerminal:
@@ -58,32 +53,56 @@ class TestTerminal:
 
 
 class TestScreenshot:
-    """Тесты скриншота."""
+    """Тесты скриншота через Shift+Win+S."""
 
-    @patch.dict("sys.modules", {"PIL": MagicMock(), "PIL.ImageGrab": MagicMock()})
-    def test_do_screenshot(self):
-        from PIL import ImageGrab
-
-        mock_screenshot = MagicMock()
-        ImageGrab.grab.return_value = mock_screenshot
-
+    @patch("voice_assistant.commands.system.platform.system")
+    @patch("voice_assistant.commands.system.ctypes.windll.user32.keybd_event")
+    def test_do_screenshot_windows(self, mock_keybd_event, mock_system):
+        mock_system.return_value = "Windows"
         system.do_screenshot()
+        # 6 вызовов: отпускаем Win, отпускаем S, нажимаем Win, Shift, S, отпускаем S, Shift, Win
+        assert mock_keybd_event.call_count >= 6
 
-        ImageGrab.grab.assert_called_once()
-        mock_screenshot.save.assert_called_once()
-
-    def test_do_screenshot_no_pillow(self):
-        with patch.dict("sys.modules", {"PIL": None, "PIL.ImageGrab": None}):
-            system.do_screenshot()
+    @patch("voice_assistant.commands.system.platform.system")
+    def test_do_screenshot_not_windows(self, mock_system):
+        mock_system.return_value = "Linux"
+        # Не должно быть исключения
+        system.do_screenshot()
 
 
 class TestTimer:
     """Тесты таймера."""
 
     @patch("voice_assistant.commands.system.webbrowser.open")
-    def test_do_timer(self, mock_open):
-        system.do_timer()
+    def test_do_timer_with_number(self, mock_open):
+        system.do_timer("таймер 5 минут")
+        mock_open.assert_called_once_with("https://www.google.com/search?q=5+minute+timer")
+
+    @patch("voice_assistant.commands.system.webbrowser.open")
+    def test_do_timer_with_word(self, mock_open):
+        system.do_timer("таймер пять минут")
+        mock_open.assert_called_once_with("https://www.google.com/search?q=5+minute+timer")
+
+    @patch("voice_assistant.commands.system.webbrowser.open")
+    def test_do_timer_without_number(self, mock_open):
+        system.do_timer("таймер")
         mock_open.assert_called_once_with("https://www.google.com/search?q=timer")
+
+
+class TestExtractMinutes:
+    """Тесты извлечения минут."""
+
+    def test_digit(self):
+        assert system._extract_minutes("таймер 5 минут") == 5
+
+    def test_word(self):
+        assert system._extract_minutes("таймер пять минут") == 5
+
+    def test_no_number(self):
+        assert system._extract_minutes("таймер") is None
+
+    def test_large_number(self):
+        assert system._extract_minutes("таймер 30 минут") == 30
 
 
 if __name__ == "__main__":

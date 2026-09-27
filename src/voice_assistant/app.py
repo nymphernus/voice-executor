@@ -66,7 +66,7 @@ def main() -> None:
                 f"confidence: {result.confidence:.2f})"
             )
             try:
-                executor.execute(result.command)
+                executor.execute(result.command, text)
             except KeyError as e:
                 logger.error(f"Ошибка выполнения: {e}")
         else:
