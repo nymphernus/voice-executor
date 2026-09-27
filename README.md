@@ -168,11 +168,11 @@ pytest tests/ -v
 pytest tests/ --cov=src --cov-report=term-missing
 ```
 
-## Сборка exe (Windows)
+## Ссборка exe (Windows)
 
 ```bash
 pip install pyinstaller
-pyinstaller --onefile --name voice-executor --add-data "config.example.toml;." main.py
+pyinstaller voice-executor.spec --clean
 ```
 
 Или через скрипт:

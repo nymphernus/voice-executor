@@ -16,26 +16,19 @@ project_root = Path(__file__).parent.parent
 def main():
     print("Сборка voice-executor.exe...")
 
-    # Проверяем наличие PyInstaller
     try:
         import PyInstaller  # noqa: F401
     except ImportError:
         print("PyInstaller не установлен. Установите: pip install pyinstaller")
         sys.exit(1)
 
-    # Запускаем PyInstaller
     result = subprocess.run(
         [
             sys.executable,
             "-m",
             "PyInstaller",
-            "--onefile",
-            "--name",
-            "voice-executor",
-            "--add-data",
-            "config.example.toml;.",
+            "voice-executor.spec",
             "--clean",
-            "main.py",
         ],
         cwd=project_root,
     )
