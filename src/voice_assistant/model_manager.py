@@ -1,7 +1,6 @@
 """Управление моделью Vosk: проверка, скачивание."""
 
 import logging
-import sys
 import time
 import urllib.request
 import zipfile
@@ -21,12 +20,7 @@ class ModelManager:
         Args:
             model_path: Путь к директории модели.
         """
-        # Если запущено из exe (PyInstaller)
-        if getattr(sys, "frozen", False):
-            base_path = Path(sys._MEIPASS)  # type: ignore[attr-defined]
-            self.model_path = base_path / model_path
-        else:
-            self.model_path = Path(model_path)
+        self.model_path = Path(model_path)
 
     def exists(self) -> bool:
         """Проверяет, существует ли модель."""

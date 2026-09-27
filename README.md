@@ -168,32 +168,11 @@ pytest tests/ -v
 pytest tests/ --cov=src --cov-report=term-missing
 ```
 
-## Ссборка exe (Windows)
-
-```bash
-pip install pyinstaller
-pyinstaller voice-executor.spec --clean
-```
-
-Или через скрипт:
-```bash
-python scripts/build_exe.py
-```
-
-### Важно для работы exe
-
-1. **config.toml** — скопируйте `config.example.toml` рядом с exe и переименуйте в `config.toml`
-2. **Модель Vosk** — скачайте и положите папку `models/` рядом с exe:
-   ```bash
-   python scripts/download_model.py
-   ```
-3. **Логи** — будут сохраняться в `logs/` рядом с exe
-
-### Структура для распространения
+## Структура для запуска
 
 ```
-dist/
-├── voice-executor.exe
+voice-executor/
+├── main.py
 ├── config.toml          # скопировать из config.example.toml
 ├── models/              # скачать через scripts/download_model.py
 │   └── vosk-model-small-ru-0.22/
