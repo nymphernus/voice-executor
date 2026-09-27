@@ -172,7 +172,32 @@ pytest tests/ --cov=src --cov-report=term-missing
 
 ```bash
 pip install pyinstaller
-pyinstaller --onefile --name voice-executor main.py
+pyinstaller --onefile --name voice-executor --add-data "config.example.toml;." main.py
+```
+
+Или через скрипт:
+```bash
+python scripts/build_exe.py
+```
+
+### Важно для работы exe
+
+1. **config.toml** — скопируйте `config.example.toml` рядом с exe и переименуйте в `config.toml`
+2. **Модель Vosk** — скачайте и положите папку `models/` рядом с exe:
+   ```bash
+   python scripts/download_model.py
+   ```
+3. **Логи** — будут сохраняться в `logs/` рядом с exe
+
+### Структура для распространения
+
+```
+dist/
+├── voice-executor.exe
+├── config.toml          # скопировать из config.example.toml
+├── models/              # скачать через scripts/download_model.py
+│   └── vosk-model-small-ru-0.22/
+└── logs/                # создаётся автоматически
 ```
 
 ## Troubleshooting

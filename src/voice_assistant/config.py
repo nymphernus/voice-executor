@@ -6,6 +6,7 @@
 """
 
 import os
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -65,10 +66,13 @@ def load_config(config_path: str | Path | None = None) -> AppConfig:
         ValueError: Если конфигурация невалидна.
     """
     if config_path is None:
-        # Ищем config.toml в текущей директории
-        config_path = Path("config.toml")
+        # Если запущено из exe (PyInstaller)
+        base_path = Path(sys._MEIPASS) if getattr(sys, "frozen", False) else Path(".")  # type: ignore[attr-defined]
+
+        # Ищем config.toml в текущей директории или в директории с exe
+        config_path = base_path / "config.toml"
         if not config_path.exists():
-            config_path = Path("config.example.toml")
+            config_path = base_path / "config.example.toml"
     else:
         config_path = Path(config_path)
 
