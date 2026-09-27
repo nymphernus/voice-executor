@@ -69,10 +69,27 @@ def load_config(config_path: str | Path | None = None) -> AppConfig:
         # Если запущено из exe (PyInstaller)
         base_path = Path(sys._MEIPASS) if getattr(sys, "frozen", False) else Path(".")  # type: ignore[attr-defined]
 
-        # Ищем config.toml в текущей директории или в директории с exe
-        config_path = base_path / "config.toml"
-        if not config_path.exists():
-            config_path = base_path / "config.example.toml"
+        # Ищем config.toml рядом с exe и внутри exe
+        local_config = Path("config.toml")
+        local_example = Path("config.example.toml")
+        base_config = base_path / "config.toml"
+        base_example = base_path / "config.example.toml"
+
+        # Приоритет: config.toml рядом с exe → config.toml внутри → example рядом → example внутри
+        if local_config.exists():
+            config_path = local_config
+        elif base_config.exists():
+            config_path = base_config
+        elif local_example.exists():
+            config_path = local_example
+        else:
+            config_path = base_example
+
+        # Отладочная информация
+        print(f"[DEBUG] frozen: {getattr(sys, 'frozen', False)}")
+        print(f"[DEBUG] base_path: {base_path}")
+        print(f"[DEBUG] config_path: {config_path}")
+        print(f"[DEBUG] exists: {config_path.exists()}")
     else:
         config_path = Path(config_path)
 

@@ -1,53 +1,25 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-import sys
-from pathlib import Path
-
-block_cipher = None
-
-# Путь к проекту
-project_root = Path(SPECPATH)
 
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[
-        ('config.example.toml', '.'),
-    ],
-    hiddenimports=[
-        'voice_assistant',
-        'voice_assistant.app',
-        'voice_assistant.config',
-        'voice_assistant.logging_setup',
-        'voice_assistant.audio',
-        'voice_assistant.recognizer',
-        'voice_assistant.nlu',
-        'voice_assistant.executor',
-        'voice_assistant.model_manager',
-        'voice_assistant.commands',
-        'voice_assistant.commands.system',
-        'voice_assistant.commands.browser',
-        'voice_assistant.commands.apps',
-        'voice_assistant.commands.discord',
-    ],
+    datas=[('config.example.toml', '.')],
+    hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
     noarchive=False,
+    optimize=0,
 )
-
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure)
 
 exe = EXE(
     pyz,
     a.scripts,
     a.binaries,
-    a.zipfiles,
     a.datas,
     [],
     name='voice-executor',
