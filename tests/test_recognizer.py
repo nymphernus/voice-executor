@@ -2,14 +2,12 @@
 Тесты для модуля recognizer.
 """
 
-import os
-import sys
-import json
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from voice_assistant.recognizer import SpeechRecognizer
+import pytest
+
 from voice_assistant.config import RecognitionConfig
+from voice_assistant.recognizer import SpeechRecognizer
 
 
 class TestSpeechRecognizer:

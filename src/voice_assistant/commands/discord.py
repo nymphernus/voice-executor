@@ -5,8 +5,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-VK_MENU = 0x12   # Alt
-VK_F2 = 0x71     # F2
+VK_MENU = 0x12  # Alt
+VK_F2 = 0x71  # F2
 
 
 def do_alt_f2() -> None:

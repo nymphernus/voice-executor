@@ -4,8 +4,8 @@
 
 import logging
 
+from voice_assistant.commands import apps, browser, discord, system
 from voice_assistant.executor import CommandExecutor
-from voice_assistant.commands import system, browser, apps, discord
 
 logger = logging.getLogger(__name__)
 

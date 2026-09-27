@@ -2,16 +2,13 @@
 Тесты для модуля config.
 """
 
-import os
-import sys
 import pytest
-from pathlib import Path
 
 from voice_assistant.config import (
-    load_config,
     AppConfig,
-    RecognitionConfig,
     CommandsConfig,
+    RecognitionConfig,
+    load_config,
 )
 
 
@@ -21,7 +18,8 @@ class TestLoadConfig:
     def test_load_default(self, tmp_path):
         """Загрузка конфигурации по умолчанию."""
         config_file = tmp_path / "config.toml"
-        config_file.write_text("""
+        config_file.write_text(
+            """
 [recognition]
 model_path = "models/test"
 sample_rate = 16000
@@ -37,7 +35,9 @@ youtube = ["ютуб"]
 refresh = ["обновить"]
 
 max_command_words = 2
-""", encoding="utf-8")
+""",
+            encoding="utf-8",
+        )
 
         config = load_config(config_file)
 
@@ -63,7 +63,8 @@ max_command_words = 2
     def test_env_override(self, tmp_path, monkeypatch):
         """Переопределение через переменные окружения."""
         config_file = tmp_path / "config.toml"
-        config_file.write_text("""
+        config_file.write_text(
+            """
 [recognition]
 model_path = "models/test"
 sample_rate = 16000
@@ -77,7 +78,9 @@ dota = ["дота"]
 phpstorm = ["шторм"]
 youtube = ["ютуб"]
 refresh = ["обновить"]
-""", encoding="utf-8")
+""",
+            encoding="utf-8",
+        )
 
         monkeypatch.setenv("VA_MODEL_PATH", "models/custom")
         monkeypatch.setenv("VA_SAMPLE_RATE", "8000")

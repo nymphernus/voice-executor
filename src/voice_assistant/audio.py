@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AudioDevice:
     """Информация об аудиоустройстве."""
+
     index: int
     name: str
     max_input_channels: int
@@ -25,12 +26,14 @@ def list_input_devices() -> list[AudioDevice]:
     for i in range(audio.get_device_count()):
         info = audio.get_device_info_by_index(i)
         if info.get("maxInputChannels", 0) > 0:
-            devices.append(AudioDevice(
-                index=i,
-                name=info.get("name", f"Device {i}"),
-                max_input_channels=info.get("maxInputChannels", 0),
-                default_sample_rate=info.get("defaultSampleRate", 44100.0),
-            ))
+            devices.append(
+                AudioDevice(
+                    index=i,
+                    name=info.get("name", f"Device {i}"),
+                    max_input_channels=info.get("maxInputChannels", 0),
+                    default_sample_rate=info.get("defaultSampleRate", 44100.0),
+                )
+            )
 
     audio.terminate()
     return devices

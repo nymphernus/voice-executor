@@ -2,10 +2,9 @@
 Тесты для модуля executor.
 """
 
-import os
-import sys
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 from voice_assistant.executor import CommandExecutor
 

@@ -2,12 +2,12 @@
 
 import json
 import logging
-from typing import Callable
+from collections.abc import Callable
 
-from vosk import Model, KaldiRecognizer, SetLogLevel
+from vosk import KaldiRecognizer, Model, SetLogLevel
 
-from voice_assistant.config import RecognitionConfig
 from voice_assistant.audio import create_audio_stream
+from voice_assistant.config import RecognitionConfig
 
 SetLogLevel(-1)
 logger = logging.getLogger(__name__)
@@ -31,9 +31,10 @@ class SpeechRecognizer:
         """Загружает модель Vosk."""
         logger.info(f"Загрузка модели: {self.config.model_path}")
         self._model = Model(self.config.model_path)
-        self._recognizer = KaldiRecognizer(self._model, self.config.sample_rate)
-        self._recognizer.SetWords(True)
-        self._recognizer.SetPartialWords(True)
+        recognizer = KaldiRecognizer(self._model, self.config.sample_rate)
+        recognizer.SetWords(True)
+        recognizer.SetPartialWords(True)
+        self._recognizer = recognizer
         logger.info("Модель загружена")
 
     def start(self) -> None:
@@ -55,7 +56,11 @@ class SpeechRecognizer:
             self._audio = None
         logger.info("Аудиопоток остановлен")
 
-    def listen(self, on_final: Callable[[str], None], on_partial: Callable[[str], None] | None = None) -> None:
+    def listen(
+        self,
+        on_final: Callable[[str], None],
+        on_partial: Callable[[str], None] | None = None,
+    ) -> None:
         """
         Непрерывно слушает микрофон и распознаёт речь.
 

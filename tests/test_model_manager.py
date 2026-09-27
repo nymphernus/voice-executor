@@ -2,11 +2,9 @@
 Тесты для модуля model_manager.
 """
 
-import os
-import sys
+from unittest.mock import MagicMock, patch
+
 import pytest
-from pathlib import Path
-from unittest.mock import patch, MagicMock
 
 from voice_assistant.model_manager import ModelManager
 

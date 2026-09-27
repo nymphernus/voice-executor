@@ -2,11 +2,9 @@
 Тесты для модуля nlu.
 """
 
-import os
-import sys
 import pytest
 
-from voice_assistant.nlu import NLUEngine, MatchResult
+from voice_assistant.nlu import NLUEngine
 
 
 class TestNormalize:

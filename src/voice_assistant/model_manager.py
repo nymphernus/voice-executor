@@ -1,7 +1,6 @@
 """Управление моделью Vosk: проверка, скачивание."""
 
 import logging
-import os
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -43,7 +42,7 @@ class ModelManager:
             logger.info(f"Модель уже существует: {self.model_path}")
             return self.model_path
 
-        logger.info(f"Скачивание модели Vosk (~50 MB)...")
+        logger.info("Скачивание модели Vosk (~50 MB)...")
 
         # Создаём директорию models
         models_dir = self.model_path.parent

@@ -6,8 +6,8 @@
 """
 
 import os
-from pathlib import Path
 from dataclasses import dataclass, field
+from pathlib import Path
 
 try:
     import tomllib
@@ -18,6 +18,7 @@ except ImportError:
 @dataclass
 class RecognitionConfig:
     """Настройки распознавания речи."""
+
     model_path: str = "models/vosk-model-small-ru-0.22"
     sample_rate: int = 16000
     chunk_size: int = 4000
@@ -27,6 +28,7 @@ class RecognitionConfig:
 @dataclass
 class CommandsConfig:
     """Триггеры команд."""
+
     stop: list[str] = field(default_factory=lambda: ["завершить", "стоп", "хватит"])
     discord: list[str] = field(default_factory=lambda: ["микрофон", "микро"])
     dota: list[str] = field(default_factory=lambda: ["дота"])
@@ -38,6 +40,7 @@ class CommandsConfig:
 @dataclass
 class AppConfig:
     """Главная конфигурация."""
+
     recognition: RecognitionConfig = field(default_factory=RecognitionConfig)
     commands: CommandsConfig = field(default_factory=CommandsConfig)
     max_command_words: int = 2
@@ -95,10 +98,13 @@ def load_config(config_path: str | Path | None = None) -> AppConfig:
     )
 
     # Переопределение через переменные окружения
-    if os.getenv("VA_MODEL_PATH"):
-        recognition.model_path = os.getenv("VA_MODEL_PATH")
-    if os.getenv("VA_SAMPLE_RATE"):
-        recognition.sample_rate = int(os.getenv("VA_SAMPLE_RATE"))
+    model_path_override = os.getenv("VA_MODEL_PATH")
+    if model_path_override:
+        recognition.model_path = model_path_override
+
+    sample_rate_override = os.getenv("VA_SAMPLE_RATE")
+    if sample_rate_override:
+        recognition.sample_rate = int(sample_rate_override)
 
     max_words = data.get("max_command_words", 2)
 

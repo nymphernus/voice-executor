@@ -5,7 +5,6 @@ import os
 import subprocess
 import sys
 import webbrowser
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +38,9 @@ def _find_phpstorm() -> str | None:
     """Ищет PHPStorm на всех дисках."""
     # 1. Стандартные пути
     program_files = [
-        os.environ.get("ProgramFiles", r"C:\Program Files"),
-        os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"),
-        os.environ.get("LocalAppData", ""),
+        os.environ.get("PROGRAMFILES", r"C:\Program Files"),
+        os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)"),
+        os.environ.get("LOCALAPPDATA", ""),
     ]
     for pf in program_files:
         if not pf:
@@ -55,6 +54,7 @@ def _find_phpstorm() -> str | None:
     if sys.platform == "win32":
         try:
             import winreg
+
             for hkey, subkey in [
                 (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\JetBrains\PhpStorm"),
                 (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\JetBrains\PhpStorm"),
@@ -76,8 +76,13 @@ def _find_phpstorm() -> str | None:
     logger.info("Поиск PHPStorm на всех дисках...")
     drives = _get_all_drives()
     skip_dirs = {
-        "windows", "programdata", "$recycle.bin", "system volume information",
-        "msocache", "recovery", "perflogs",
+        "windows",
+        "programdata",
+        "$recycle.bin",
+        "system volume information",
+        "msocache",
+        "recovery",
+        "perflogs",
     }
     for drive in drives:
         for root, dirs, files in os.walk(drive):
@@ -94,6 +99,7 @@ def _get_all_drives() -> list[str]:
     drives = []
     if sys.platform == "win32":
         import ctypes
+
         kernel32 = ctypes.windll.kernel32
         buffer = ctypes.create_string_buffer(260)
         result = kernel32.GetLogicalDriveStringsA(260, buffer)

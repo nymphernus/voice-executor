@@ -1,82 +1,154 @@
-# Голосовой ассистент
+# Voice Assistant
 
-Приложение на Python для непрерывного распознавания речи с микрофона (офлайн) и выполнения голосовых команд.
+Офлайн голосовой ассистент на Python с распознаванием речи через Vosk.
 
-## Структура проекта
+## Возможности
 
-```
-voice-assistant/
-├── main.py              # Точка входа
-├── config.py            # Настройки и триггеры команд
-├── commands.py          # Функции команд
-├── recognizer.py        # Распознавание речи (Vosk)
-├── executor.py          # Исполнитель команд
-├── requirements.txt     # Зависимости
-├── tests/               # Тесты
-│   ├── test_config.py
-│   ├── test_commands.py
-│   ├── test_recognizer.py
-│   └── test_executor.py
-├── models/              # Модели Vosk (создаётся автоматически)
-└── venv/                # Виртуальное окружение
-```
+- Непрерывное распознавание речи с микрофона (офлайн)
+- Выполнение голосовых команд
+- Fuzzy matching для устойчивости к ошибкам распознавания
+- Антидребезг (защита от повторного срабатывания)
+- TOML-конфигурация
+- Логирование (консоль + файл с ротацией)
+- Расширяемая система команд
+
+## Требования
+
+- Python 3.10+
+- Микрофон
+- ~50 MB места на диске (для модели)
 
 ## Установка
 
 ```bash
+# Клонирование
+git clone https://github.com/your-repo/voice-assistant.git
+cd voice-assistant
+
+# Виртуальное окружение
 python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
+venv\Scripts\activate  # Windows
+source venv/bin/activate  # Linux/macOS
+
+# Установка
+pip install -e .
+```
+
+## Скачивание модели
+
+```bash
+# Маленькая модель (~50 MB)
+python scripts/download_model.py
+
+# Или большая модель (~1.5 GB) для лучшего распознавания
+python scripts/download_model.py --model big
 ```
 
 ## Запуск
 
 ```bash
+# Через Python
 python main.py
+
+# Или через entry point
+voice-assistant
+
+# Или как модуль
+python -m voice_assistant
 ```
 
-## Добавление новой команды
+## Настройка
 
-Откройте `config.py` и добавьте триггер:
+Скопируйте `config.example.toml` в `config.toml` и настройте под себя:
 
-```python
-TRIGGERS = {
-    # ... существующие команды
-    "новая_команда": "new_action",
-}
+```toml
+[recognition]
+model_path = "models/vosk-model-small-ru-0.22"
+sample_rate = 16000
+chunk_size = 4000
+device = "default"
 
-GRAMMAR = [
-    # ... существующие фразы
-    "новая_команда",
-]
+[commands]
+stop = ["завершить", "стоп", "хватит"]
+discord = ["микрофон", "микро"]
+dota = ["дота"]
+phpstorm = ["шторм", "storm"]
+youtube = ["ютуб", "youtube"]
+refresh = ["обновить", "обнови"]
+
+max_command_words = 2
 ```
 
-Затем в `commands.py` добавьте функцию и зарегистрируйте её:
+### Переменные окружения
 
-```python
-def do_new_action():
-    """Описание команды."""
-    print("Выполняю новую команду...")
-
-ACTIONS = {
-    # ... существующие действия
-    "new_action": do_new_action,
-}
-```
+- `VA_MODEL_PATH` — переопределяет путь к модели
+- `VA_SAMPLE_RATE` — переопределяет частоту дискретизации
 
 ## Доступные команды
 
 | Команда | Действие |
 |---------|----------|
 | "завершить", "стоп", "хватит" | Останавливает программу |
-| "микрофон", "микро" | Alt+F2 (Discord) |
+| "микрофон", "микро" | Alt+F2 в Discord |
 | "дота" | Запускает Dota 2 |
 | "шторм", "storm" | Открывает PHPStorm |
 | "ютуб", "youtube" | Открывает YouTube |
 | "обновить", "обнови" | F5 (обновление страницы) |
 
+## Добавление новой команды
+
+1. Откройте `config.toml` и добавьте триггер в секцию `[commands]`:
+
+```toml
+[commands]
+my_command = ["триггер1", "триггер2"]
+```
+
+2. В `src/voice_assistant/commands/` создайте функцию:
+
+```python
+def do_my_command() -> None:
+    """Описание команды."""
+    print("Выполняю команду...")
+```
+
+3. Зарегистрируйте в `src/voice_assistant/commands/__init__.py`:
+
+```python
+executor.register("my_command", my_module.do_my_command)
+```
+
+## Структура проекта
+
+```
+voice-assistant/
+├── main.py              # Тонкая обёртка
+├── config.example.toml  # Пример конфигурации
+├── pyproject.toml       # Сборка и зависимости
+├── src/voice_assistant/ # Исходный код
+├── tests/               # Тесты
+├── scripts/             # Скрипты
+├── models/              # Модели Vosk (не в Git)
+└── logs/                # Логи (не в Git)
+```
+
 ## Тесты
 
 ```bash
+# Все тесты
 pytest tests/ -v
+
+# С покрытием
+pytest tests/ --cov=src --cov-report=term-missing
 ```
+
+## Сборка exe (Windows)
+
+```bash
+pip install pyinstaller
+pyinstaller --onefile --name voice-assistant main.py
+```
+
+## Лицензия
+
+MIT

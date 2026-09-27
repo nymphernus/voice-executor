@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MatchResult:
     """Результат сопоставления текста с командой."""
+
     command: str | None = None
     trigger: str | None = None
     confidence: float = 0.0
@@ -97,10 +98,9 @@ class NLUEngine:
         """
         now = time.time()
 
-        if result.command == self._last_command:
-            if now - self._last_time < self.debounce_seconds:
-                logger.debug(f"Антидребезг: команда '{result.command}' уже выполнялась")
-                return MatchResult()
+        if result.command == self._last_command and now - self._last_time < self.debounce_seconds:
+            logger.debug(f"Антидребезг: команда '{result.command}' уже выполнялась")
+            return MatchResult()
 
         self._last_command = result.command
         self._last_time = now
@@ -163,9 +163,9 @@ class NLUEngine:
             for j in range(1, len2 + 1):
                 cost = 0 if s1[i - 1] == s2[j - 1] else 1
                 matrix[i][j] = min(
-                    matrix[i - 1][j] + 1,      # удаление
-                    matrix[i][j - 1] + 1,      # вставка
-                    matrix[i - 1][j - 1] + cost  # замена
+                    matrix[i - 1][j] + 1,  # удаление
+                    matrix[i][j - 1] + 1,  # вставка
+                    matrix[i - 1][j - 1] + cost,  # замена
                 )
 
         distance = matrix[len1][len2]

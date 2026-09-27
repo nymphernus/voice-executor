@@ -2,12 +2,11 @@
 Тесты для модуля commands.
 """
 
-import os
-import sys
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-from voice_assistant.commands import system, browser, apps, discord
+import pytest
+
+from voice_assistant.commands import apps, browser, discord, system
 
 
 class TestSystemCommands:

@@ -5,13 +5,13 @@
 import logging
 import sys
 
+from voice_assistant.commands import register_commands
 from voice_assistant.config import load_config
+from voice_assistant.executor import CommandExecutor
 from voice_assistant.logging_setup import setup_logging
 from voice_assistant.model_manager import ModelManager
-from voice_assistant.recognizer import SpeechRecognizer
 from voice_assistant.nlu import NLUEngine
-from voice_assistant.executor import CommandExecutor
-from voice_assistant.commands import register_commands
+from voice_assistant.recognizer import SpeechRecognizer
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def main() -> None:
     # Конфигурация
     try:
         config = load_config()
-        logger.info(f"Конфигурация загружена")
+        logger.info("Конфигурация загружена")
     except FileNotFoundError as e:
         logger.error(f"Ошибка конфигурации: {e}")
         sys.exit(1)
@@ -60,7 +60,11 @@ def main() -> None:
         logger.info(f"Распознано: {text}")
         result = nlu.match(text)
         if result.command:
-            logger.info(f"Команда: {result.command} (триггер: {result.trigger}, confidence: {result.confidence:.2f})")
+            logger.info(
+                f"Команда: {result.command} "
+                f"(триггер: {result.trigger}, "
+                f"confidence: {result.confidence:.2f})"
+            )
             try:
                 executor.execute(result.command)
             except KeyError as e:

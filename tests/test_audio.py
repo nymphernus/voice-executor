@@ -2,16 +2,15 @@
 Тесты для модуля audio.
 """
 
-import os
-import sys
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 from voice_assistant.audio import (
-    list_input_devices,
+    AudioDevice,
     check_microphone_available,
     create_audio_stream,
-    AudioDevice,
+    list_input_devices,
 )
 
 
