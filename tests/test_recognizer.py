@@ -8,100 +8,69 @@ import json
 import pytest
 from unittest.mock import patch, MagicMock
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from recognizer import (
-    normalize_text,
-    create_recognizer,
-    create_audio_stream,
-    listen_continuous,
-)
+from voice_assistant.recognizer import SpeechRecognizer
+from voice_assistant.config import RecognitionConfig
 
 
-class TestNormalizeText:
-    """Тесты normalize_text."""
+class TestSpeechRecognizer:
+    """Тесты SpeechRecognizer."""
 
-    def test_lowercase(self):
-        assert normalize_text("СтОп") == "стоп"
+    def test_init(self):
+        config = RecognitionConfig()
+        recognizer = SpeechRecognizer(config)
+        assert recognizer.config == config
 
-    def test_strip(self):
-        assert normalize_text("  стоп  ") == "стоп"
-
-    def test_punctuation(self):
-        assert normalize_text("стоп!") == "стоп"
-        assert normalize_text("завершить.") == "завершить"
-
-
-class TestCreateRecognizer:
-    """Тесты create_recognizer."""
-
-    @patch("recognizer.Model")
-    @patch("recognizer.KaldiRecognizer")
-    def test_create_recognizer(self, mock_rec_class, mock_model_class):
-        mock_recognizer = MagicMock()
-        mock_rec_class.return_value = mock_recognizer
-
-        result = create_recognizer("fake_model_path")
-
-        assert result == mock_recognizer
+    @patch("voice_assistant.recognizer.KaldiRecognizer")
+    @patch("voice_assistant.recognizer.Model")
+    def test_load_model(self, mock_model_class, mock_rec_class):
+        config = RecognitionConfig()
+        recognizer = SpeechRecognizer(config)
+        recognizer.load_model()
+        mock_model_class.assert_called_once_with(config.model_path)
         mock_rec_class.assert_called_once()
-        mock_recognizer.SetGrammar.assert_called_once()
 
+    @patch("voice_assistant.recognizer.create_audio_stream")
+    def test_start(self, mock_create_stream):
+        config = RecognitionConfig()
+        recognizer = SpeechRecognizer(config)
 
-class TestCreateAudioStream:
-    """Тесты create_audio_stream."""
-
-    @patch("recognizer.pyaudio.PyAudio")
-    def test_create_stream(self, mock_pyaudio):
         mock_audio = MagicMock()
         mock_stream = MagicMock()
-        mock_pyaudio.return_value = mock_audio
-        mock_audio.open.return_value = mock_stream
-
-        audio, stream = create_audio_stream()
-
-        assert audio == mock_audio
-        assert stream == mock_stream
-        mock_audio.open.assert_called_once()
-
-
-class TestListenContinuous:
-    """Тесты listen_continuous."""
-
-    @patch("recognizer.create_audio_stream")
-    @patch("recognizer.create_recognizer")
-    def test_keyboard_interrupt(self, mock_create_rec, mock_create_stream):
-        mock_recognizer = MagicMock()
-        mock_audio = MagicMock()
-        mock_stream = MagicMock()
-
-        mock_create_rec.return_value = mock_recognizer
         mock_create_stream.return_value = (mock_audio, mock_stream)
-        mock_stream.read.side_effect = KeyboardInterrupt
 
-        listen_continuous("fake_model_path")
+        recognizer.start()
+        assert recognizer._audio == mock_audio
+        assert recognizer._stream == mock_stream
 
+    def test_stop(self):
+        config = RecognitionConfig()
+        recognizer = SpeechRecognizer(config)
+
+        mock_audio = MagicMock()
+        mock_stream = MagicMock()
+        recognizer._audio = mock_audio
+        recognizer._stream = mock_stream
+
+        recognizer.stop()
         mock_stream.stop_stream.assert_called_once()
         mock_stream.close.assert_called_once()
         mock_audio.terminate.assert_called_once()
 
-    @patch("recognizer.create_audio_stream")
-    @patch("recognizer.create_recognizer")
-    def test_with_callback(self, mock_create_rec, mock_create_stream):
-        mock_recognizer = MagicMock()
+    @patch("voice_assistant.recognizer.create_audio_stream")
+    def test_listen_keyboard_interrupt(self, mock_create_stream):
+        config = RecognitionConfig()
+        recognizer = SpeechRecognizer(config)
+
         mock_audio = MagicMock()
         mock_stream = MagicMock()
-
-        mock_create_rec.return_value = mock_recognizer
         mock_create_stream.return_value = (mock_audio, mock_stream)
-        mock_recognizer.AcceptWaveform.side_effect = [True, False]
-        mock_recognizer.Result.return_value = '{"text": "ютуб"}'
-        mock_stream.read.side_effect = [b"data1", b"data2", KeyboardInterrupt]
+        mock_stream.read.side_effect = KeyboardInterrupt
 
-        callback = MagicMock()
-        listen_continuous("fake_model_path", on_recognized=callback)
+        recognizer._recognizer = MagicMock()
+        recognizer._stream = mock_stream
+        recognizer.listen(on_final=MagicMock())
 
-        callback.assert_called_once_with("ютуб")
+        mock_stream.stop_stream.assert_called_once()
 
 
 if __name__ == "__main__":

@@ -1,9 +1,7 @@
-"""
-Конфигурация тестов.
-"""
+"""Конфигурация тестов."""
 
 import os
 import sys
 
-# Добавляем корневую директорию проекта в sys.path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Добавляем src в sys.path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))

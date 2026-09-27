@@ -5,92 +5,111 @@
 import os
 import sys
 import pytest
+from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from config import (
-    MODEL_PATH,
-    SAMPLE_RATE,
-    CHUNK_SIZE,
-    MAX_COMMAND_WORDS,
-    TRIGGERS,
-    GRAMMAR,
+from voice_assistant.config import (
+    load_config,
+    AppConfig,
+    RecognitionConfig,
+    CommandsConfig,
 )
 
 
-class TestConfig:
-    """Тесты конфигурации."""
+class TestLoadConfig:
+    """Тесты загрузки конфигурации."""
 
-    def test_model_path(self):
-        assert MODEL_PATH == "models/vosk-model-small-ru-0.22"
+    def test_load_default(self, tmp_path):
+        """Загрузка конфигурации по умолчанию."""
+        config_file = tmp_path / "config.toml"
+        config_file.write_text("""
+[recognition]
+model_path = "models/test"
+sample_rate = 16000
+chunk_size = 4000
+device = "default"
 
-    def test_sample_rate(self):
-        assert SAMPLE_RATE == 16000
+[commands]
+stop = ["стоп"]
+discord = ["микрофон"]
+dota = ["дота"]
+phpstorm = ["шторм"]
+youtube = ["ютуб"]
+refresh = ["обновить"]
 
-    def test_chunk_size(self):
-        assert CHUNK_SIZE == 4000
+max_command_words = 2
+""", encoding="utf-8")
 
-    def test_max_command_words(self):
-        assert MAX_COMMAND_WORDS == 2
+        config = load_config(config_file)
 
+        assert isinstance(config, AppConfig)
+        assert config.recognition.model_path == "models/test"
+        assert config.recognition.sample_rate == 16000
+        assert config.commands.stop == ["стоп"]
+        assert config.max_command_words == 2
 
-class TestTriggers:
-    """Тесты триггеров."""
+    def test_load_example(self):
+        """Загрузка примера конфигурации."""
+        config = load_config("config.example.toml")
 
-    def test_triggers_not_empty(self):
-        assert len(TRIGGERS) > 0
+        assert isinstance(config, AppConfig)
+        assert config.recognition.model_path == "models/vosk-model-small-ru-0.22"
+        assert config.commands.stop == ["завершить", "стоп", "хватит"]
 
-    def test_has_exit_triggers(self):
-        exit_words = ["завершить", "заверши", "стоп", "хватит", "выключи", "конец", "отмена"]
-        for word in exit_words:
-            assert word in TRIGGERS, f"Нет триггера: {word}"
-            assert TRIGGERS[word] == "exit"
+    def test_file_not_found(self, tmp_path):
+        """Ошибка при отсутствии файла."""
+        with pytest.raises(FileNotFoundError):
+            load_config(tmp_path / "nonexistent.toml")
 
-    def test_has_microphone_triggers(self):
-        mic_words = ["микрофон", "микро"]
-        for word in mic_words:
-            assert word in TRIGGERS, f"Нет триггера: {word}"
-            assert TRIGGERS[word] == "alt+f2"
+    def test_env_override(self, tmp_path, monkeypatch):
+        """Переопределение через переменные окружения."""
+        config_file = tmp_path / "config.toml"
+        config_file.write_text("""
+[recognition]
+model_path = "models/test"
+sample_rate = 16000
+chunk_size = 4000
+device = "default"
 
-    def test_has_dota(self):
-        assert "дота" in TRIGGERS
-        assert TRIGGERS["дота"] == "steam://rungameid/570"
+[commands]
+stop = ["стоп"]
+discord = ["микрофон"]
+dota = ["дота"]
+phpstorm = ["шторм"]
+youtube = ["ютуб"]
+refresh = ["обновить"]
+""", encoding="utf-8")
 
-    def test_has_phpstorm_triggers(self):
-        php_words = ["шторм", "storm"]
-        for word in php_words:
-            assert word in TRIGGERS, f"Нет триггера: {word}"
-            assert TRIGGERS[word] == "phpstorm"
+        monkeypatch.setenv("VA_MODEL_PATH", "models/custom")
+        monkeypatch.setenv("VA_SAMPLE_RATE", "8000")
 
-    def test_has_youtube_triggers(self):
-        yt_words = ["ютуб", "youtube"]
-        for word in yt_words:
-            assert word in TRIGGERS, f"Нет триггера: {word}"
-            assert TRIGGERS[word] == "https://www.youtube.com"
+        config = load_config(config_file)
 
-    def test_has_refresh_triggers(self):
-        refresh_words = ["обновить", "обнови", "обновление"]
-        for word in refresh_words:
-            assert word in TRIGGERS, f"Нет триггера: {word}"
-            assert TRIGGERS[word] == "f5"
-
-    def test_no_steam(self):
-        assert "стим" not in TRIGGERS
-
-    def test_no_google(self):
-        assert "гугл" not in TRIGGERS
-        assert "google" not in TRIGGERS
+        assert config.recognition.model_path == "models/custom"
+        assert config.recognition.sample_rate == 8000
 
 
-class TestGrammar:
-    """Тесты грамматики."""
+class TestRecognitionConfig:
+    """Тесты конфигурации распознавания."""
 
-    def test_grammar_not_empty(self):
-        assert len(GRAMMAR) > 0
+    def test_defaults(self):
+        config = RecognitionConfig()
+        assert config.model_path == "models/vosk-model-small-ru-0.22"
+        assert config.sample_rate == 16000
+        assert config.chunk_size == 4000
+        assert config.device == "default"
 
-    def test_grammar_has_all_triggers(self):
-        for trigger in TRIGGERS:
-            assert any(trigger in phrase for phrase in GRAMMAR), f"Нет в грамматике: {trigger}"
+
+class TestCommandsConfig:
+    """Тесты конфигурации команд."""
+
+    def test_defaults(self):
+        config = CommandsConfig()
+        assert "стоп" in config.stop
+        assert "микрофон" in config.discord
+        assert "дота" in config.dota
+        assert "шторм" in config.phpstorm
+        assert "ютуб" in config.youtube
+        assert "обновить" in config.refresh
 
 
 if __name__ == "__main__":
