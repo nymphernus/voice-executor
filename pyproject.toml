@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "voice-assistant"
+name = "voice-executor"
 version = "0.1.0"
 description = "Офлайн голосовой ассистент на Python с распознаванием речи через Vosk"
 readme = "README.md"
@@ -42,7 +42,7 @@ dev = [
 ]
 
 [project.scripts]
-voice-assistant = "voice_assistant.app:main"
+voice-executor = "voice_assistant.app:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -3,8 +3,8 @@
 ## Установка для разработки
 
 ```bash
-git clone https://github.com/your-repo/voice-assistant.git
-cd voice-assistant
+git clone https://github.com/your-repo/voice-executor.git
+cd voice-executor
 python -m venv venv
 venv\Scripts\activate
 pip install -e ".[dev]"

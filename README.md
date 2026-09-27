@@ -1,4 +1,4 @@
-# Voice Assistant
+﻿# Voice Assistant
 
 Офлайн голосовой ассистент на Python с распознаванием речи через Vosk.
 
@@ -22,8 +22,8 @@
 
 ```bash
 # Клонирование
-git clone https://github.com/your-repo/voice-assistant.git
-cd voice-assistant
+git clone https://github.com/your-repo/voice-executor.git
+cd voice-executor
 
 # Виртуальное окружение
 python -m venv venv
@@ -51,7 +51,7 @@ python scripts/download_model.py --model big
 python main.py
 
 # Или через entry point
-voice-assistant
+voice-executor
 
 # Или как модуль
 python -m voice_assistant
@@ -125,7 +125,7 @@ executor.register("my_command", my_module.do_my_command)
 ## Структура проекта
 
 ```
-voice-assistant/
+voice-executor/
 ├── main.py              # Тонкая обёртка
 ├── config.example.toml  # Пример конфигурации
 ├── pyproject.toml       # Сборка и зависимости
@@ -150,9 +150,5 @@ pytest tests/ --cov=src --cov-report=term-missing
 
 ```bash
 pip install pyinstaller
-pyinstaller --onefile --name voice-assistant main.py
+pyinstaller --onefile --name voice-executor main.py
 ```
-
-## Лицензия
-
-MIT
