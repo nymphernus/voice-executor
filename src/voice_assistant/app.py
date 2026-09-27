@@ -99,6 +99,14 @@ def _build_triggers(config) -> dict[str, str]:
         triggers[word] = "youtube"
     for word in cmd.refresh:
         triggers[word] = "f5"
+    for word in cmd.taskmanager:
+        triggers[word] = "taskmanager"
+    for word in cmd.terminal:
+        triggers[word] = "terminal"
+    for word in cmd.screenshot:
+        triggers[word] = "screenshot"
+    for word in cmd.timer:
+        triggers[word] = "timer"
 
     return triggers
 

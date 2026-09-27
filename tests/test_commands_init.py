@@ -26,8 +26,9 @@ class TestRegisterCommands:
         executor = CommandExecutor()
         register_commands(executor)
 
-        # 6 команд: exit, alt+f2, dota, phpstorm, youtube, f5
-        assert len(executor._actions) == 6
+        # 10 команд: exit, f5, taskmanager, terminal, screenshot, timer,
+        #            youtube, dota, phpstorm, alt+f2
+        assert len(executor._actions) == 10
 
 
 if __name__ == "__main__":

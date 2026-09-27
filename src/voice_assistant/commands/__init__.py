@@ -20,6 +20,10 @@ def register_commands(executor: CommandExecutor) -> None:
     # Системные команды
     executor.register("exit", system.do_exit)
     executor.register("f5", system.do_f5)
+    executor.register("taskmanager", system.do_taskmanager)
+    executor.register("terminal", system.do_terminal)
+    executor.register("screenshot", system.do_screenshot)
+    executor.register("timer", system.do_timer)
 
     # Браузер
     executor.register("youtube", browser.do_youtube)

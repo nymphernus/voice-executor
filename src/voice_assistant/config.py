@@ -34,7 +34,11 @@ class CommandsConfig:
     dota: list[str] = field(default_factory=lambda: ["дота"])
     phpstorm: list[str] = field(default_factory=lambda: ["шторм", "storm"])
     youtube: list[str] = field(default_factory=lambda: ["ютуб", "youtube"])
-    refresh: list[str] = field(default_factory=lambda: ["обновить", "обнови"])
+    refresh: list[str] = field(default_factory=lambda: ["обновить", "更新и"])
+    taskmanager: list[str] = field(default_factory=lambda: ["диспетчер"])
+    terminal: list[str] = field(default_factory=lambda: ["терминал"])
+    screenshot: list[str] = field(default_factory=lambda: ["скриншот"])
+    timer: list[str] = field(default_factory=lambda: ["таймер"])
 
 
 @dataclass
@@ -95,6 +99,10 @@ def load_config(config_path: str | Path | None = None) -> AppConfig:
         phpstorm=cmd_data.get("phpstorm", ["шторм", "storm"]),
         youtube=cmd_data.get("youtube", ["ютуб", "youtube"]),
         refresh=cmd_data.get("refresh", ["обновить", "обнови"]),
+        taskmanager=cmd_data.get("taskmanager", ["диспетчер"]),
+        terminal=cmd_data.get("terminal", ["терминал"]),
+        screenshot=cmd_data.get("screenshot", ["скриншот"]),
+        timer=cmd_data.get("timer", ["таймер"]),
     )
 
     # Переопределение через переменные окружения

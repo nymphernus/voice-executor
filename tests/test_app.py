@@ -47,7 +47,11 @@ class TestBuildTriggers:
         )
 
         triggers = _build_triggers(config)
-        assert triggers == {}
+        # Новые команды имеют дефолтные триггеры
+        assert "диспетчер" in triggers
+        assert "терминал" in triggers
+        assert "скриншот" in triggers
+        assert "таймер" in triggers
 
 
 if __name__ == "__main__":
