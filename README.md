@@ -1,4 +1,4 @@
-﻿# Voice Assistant
+﻿# Voice Executor
 
 Офлайн голосовой ассистент на Python с распознаванием речи через Vosk.
 
@@ -75,6 +75,10 @@ dota = ["дота"]
 phpstorm = ["шторм", "storm"]
 youtube = ["ютуб", "youtube"]
 refresh = ["обновить", "обнови"]
+taskmanager = ["диспетчер"]
+terminal = ["терминал"]
+screenshot = ["скриншот"]
+timer = ["таймер"]
 
 max_command_words = 2
 ```
@@ -96,8 +100,17 @@ max_command_words = 2
 | "обновить", "обнови" | F5 (обновление страницы) |
 | "диспетчер" | Открывает диспетчер задач |
 | "терминал" | Открывает терминал |
-| "скриншот" | Делает скриншот рабочего стола |
-| "таймер" | Открывает таймер в браузере |
+| "скриншот" | Делает скриншот через Shift+Win+S |
+| "таймер N минут" | Открывает таймер на N минут в браузере |
+
+### Примеры таймера
+
+```
+"таймер 5 минут"     → google.com/search?q=5+minute+timer
+"таймер пять минут"  → google.com/search?q=5+minute+timer
+"таймер 30 минут"    → google.com/search?q=30+minute+timer
+"таймер"              → google.com/search?q=timer
+```
 
 ## Добавление новой команды
 
@@ -130,6 +143,15 @@ voice-executor/
 ├── config.example.toml  # Пример конфигурации
 ├── pyproject.toml       # Сборка и зависимости
 ├── src/voice_assistant/ # Исходный код
+│   ├── app.py           # Главный модуль
+│   ├── config.py        # TOML-конфигурация
+│   ├── logging_setup.py # Логирование
+│   ├── audio.py         # Работа с микрофоном
+│   ├── recognizer.py     # Распознавание (Vosk)
+│   ├── nlu.py            # NLU: нормализация, fuzzy, антидребезг
+│   ├── executor.py       # Реестр действий
+│   ├── model_manager.py  # Управление моделью
+│   └── commands/         # Команды
 ├── tests/               # Тесты
 ├── scripts/             # Скрипты
 ├── models/              # Модели Vosk (не в Git)
@@ -152,3 +174,23 @@ pytest tests/ --cov=src --cov-report=term-missing
 pip install pyinstaller
 pyinstaller --onefile --name voice-executor main.py
 ```
+
+## Troubleshooting
+
+### Микрофон не найден
+- Проверьте, что микрофон подключён и не занят другим приложением
+- Проверьте настройки конфиденциальности Windows (Доступ к микрофону)
+
+### Модель не скачивается
+- Проверьте подключение к интернету
+- Скачайте вручную: https://alphacephei.com/vosk/models/vosk-model-small-ru-0.22.zip
+- Распакуйте в `models/`
+
+### Команды не срабатывают
+- Говорите чётко и не слишком быстро
+- Увеличьте `max_command_words` в конфиге, если нужно
+- Проверьте логи в `logs/assistant.log`
+
+## Лицензия
+
+MIT
